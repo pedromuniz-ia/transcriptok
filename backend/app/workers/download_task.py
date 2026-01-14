@@ -63,7 +63,7 @@ def download_video_task(
                 author=result["author"],
                 duration=result["duration"],
                 thumbnail_url=result["thumbnail_url"],
-                metadata=result["metadata"],
+                video_metadata=result["metadata"],
             )
             session.add(video)
             session.flush()

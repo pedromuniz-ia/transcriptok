@@ -51,7 +51,7 @@ class Video(Base):
         Text,
         nullable=True,
     )
-    metadata: Mapped[dict[str, Any] | None] = mapped_column(
+    video_metadata: Mapped[dict[str, Any] | None] = mapped_column(
         JSONB,
         nullable=True,
     )
