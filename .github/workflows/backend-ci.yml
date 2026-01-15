@@ -19,7 +19,7 @@ on:
 jobs:
   test:
     name: Lint & Test
-    runs-on: [self-hosted, linux, x64, transcriptok]
+    runs-on: [self-hosted, linux, x64]
     services:
       postgres:
         image: postgres:15-alpine
@@ -70,7 +70,7 @@ jobs:
     name: Build & Push Image
     needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: [self-hosted, linux, x64, transcriptok]
+    runs-on: [self-hosted, linux, x64]
     permissions:
       contents: read
       packages: write
