@@ -2,10 +2,12 @@
 
 import asyncio
 from collections.abc import AsyncGenerator
+import os
 from typing import Generator
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
 from app.main import app
@@ -14,8 +16,16 @@ from app.config import get_settings
 
 settings = get_settings()
 
-# Test database URL (use SQLite for tests)
-TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+# Test database URL (must be Postgres to support JSONB columns)
+TEST_DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL",
+    "postgresql+asyncpg://postgres:postgres@localhost:5432/transcriptok_test",
+)
+_test_db_url = make_url(TEST_DATABASE_URL)
+if not _test_db_url.get_backend_name().startswith("postgresql"):
+    raise RuntimeError(
+        f"TEST_DATABASE_URL must use Postgres for JSONB fields; got '{TEST_DATABASE_URL}'"
+    )
 
 
 @pytest.fixture(scope="session")
