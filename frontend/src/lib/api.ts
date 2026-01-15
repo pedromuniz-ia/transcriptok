@@ -49,14 +49,19 @@ class ApiClient {
   private baseUrl: string;
 
   constructor(baseUrl: string) {
-    this.baseUrl = baseUrl;
+    this.baseUrl = baseUrl.replace(/\/+$/, "");
+  }
+
+  private buildUrl(endpoint: string): string {
+    const path = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    return `${this.baseUrl}${path}`;
   }
 
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
+    const url = this.buildUrl(endpoint);
     const response = await fetch(url, {
       ...options,
       headers: {
@@ -109,7 +114,7 @@ class ApiClient {
     format: "txt" | "json" | "srt" | "vtt"
   ): Promise<Blob> {
     const response = await fetch(
-      `${this.baseUrl}/api/v1/transcripts/${transcriptId}/export`,
+      this.buildUrl(`/api/v1/transcripts/${transcriptId}/export`),
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
