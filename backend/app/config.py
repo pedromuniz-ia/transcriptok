@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     secret_key: str = "change-me-in-production"
 
     # API
+    docs_enabled: bool | None = None  # None -> follows debug setting
     api_v1_prefix: str = "/api/v1"
 
     # Database

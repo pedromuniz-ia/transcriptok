@@ -13,3 +13,5 @@ uvicorn app.main:app --reload
 
 - Swagger: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
+
+Docs visibility follows `DEBUG` by default. To force-enable docs when `DEBUG=false` (e.g., in production), set env `DOCS_ENABLED=true`.

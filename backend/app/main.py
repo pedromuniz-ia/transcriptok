@@ -10,6 +10,7 @@ from app.config import get_settings
 from app.api.v1.router import router as api_v1_router
 
 settings = get_settings()
+docs_enabled = settings.docs_enabled if settings.docs_enabled is not None else settings.debug
 
 
 @asynccontextmanager
@@ -24,9 +25,9 @@ app = FastAPI(
     title=settings.app_name,
     description="Open-source platform for automatic transcription, download and AI analysis of short-form videos",
     version="0.1.0",
-    docs_url="/docs" if settings.debug else None,
-    redoc_url="/redoc" if settings.debug else None,
-    openapi_url="/openapi.json" if settings.debug else None,
+    docs_url="/docs" if docs_enabled else None,
+    redoc_url="/redoc" if docs_enabled else None,
+    openapi_url="/openapi.json" if docs_enabled else None,
     lifespan=lifespan,
 )
 
