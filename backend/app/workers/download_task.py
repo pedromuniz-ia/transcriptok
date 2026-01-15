@@ -1,6 +1,6 @@
 """Video download Celery task."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -15,6 +15,7 @@ def get_sync_session() -> Session:
     """Get synchronous database session for Celery tasks."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
+
     from app.config import get_settings
 
     settings = get_settings()
@@ -70,7 +71,7 @@ def download_video_task(
 
         # Update job with success
         job.status = "completed"
-        job.completed_at = datetime.now(timezone.utc)
+        job.completed_at = datetime.now(UTC)
         job.output_data = {
             "video_id": str(video.id),
             "file_path": result["file_path"],
@@ -91,11 +92,11 @@ def download_video_task(
         job = session.execute(select(Job).where(Job.id == job_id)).scalar_one()
         job.status = "failed"
         job.error_message = str(e)
-        job.completed_at = datetime.now(timezone.utc)
+        job.completed_at = datetime.now(UTC)
         session.commit()
 
         # Retry if possible
-        raise self.retry(exc=e, countdown=60)
+        raise self.retry(exc=e, countdown=60) from e
 
     finally:
         session.close()

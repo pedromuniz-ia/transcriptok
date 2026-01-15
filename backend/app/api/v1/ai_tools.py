@@ -7,9 +7,9 @@ from app.schemas.ai_tools import (
     AITool,
     AIToolRequest,
     AIToolResponse,
+    ContentAnalyzerInput,
     HookGeneratorInput,
     ScriptRewriterInput,
-    ContentAnalyzerInput,
 )
 from app.services.ai_agent import AIAgentService
 
@@ -27,15 +27,18 @@ async def run_ai_tool(request: AIToolRequest) -> AIToolResponse:
 
     try:
         # Validate input type matches tool
-        if request.tool == AITool.HOOK_GENERATOR:
-            if not isinstance(request.input, HookGeneratorInput):
-                raise ValueError("Hook generator requires HookGeneratorInput")
-        elif request.tool == AITool.SCRIPT_REWRITER:
-            if not isinstance(request.input, ScriptRewriterInput):
-                raise ValueError("Script rewriter requires ScriptRewriterInput")
-        elif request.tool == AITool.CONTENT_ANALYZER:
-            if not isinstance(request.input, ContentAnalyzerInput):
-                raise ValueError("Content analyzer requires ContentAnalyzerInput")
+        if request.tool == AITool.HOOK_GENERATOR and not isinstance(
+            request.input, HookGeneratorInput
+        ):
+            raise ValueError("Hook generator requires HookGeneratorInput")
+        elif request.tool == AITool.SCRIPT_REWRITER and not isinstance(
+            request.input, ScriptRewriterInput
+        ):
+            raise ValueError("Script rewriter requires ScriptRewriterInput")
+        elif request.tool == AITool.CONTENT_ANALYZER and not isinstance(
+            request.input, ContentAnalyzerInput
+        ):
+            raise ValueError("Content analyzer requires ContentAnalyzerInput")
 
         output = await service.run_tool(request.tool, request.input)
 
@@ -45,12 +48,12 @@ async def run_ai_tool(request: AIToolRequest) -> AIToolResponse:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
-        )
+        ) from e
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"AI tool error: {str(e)}",
-        )
+        ) from e
 
 
 @router.post("/hooks", response_model=AIToolResponse)

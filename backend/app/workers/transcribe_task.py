@@ -1,23 +1,24 @@
 """Transcription Celery task."""
 
 import asyncio
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.celery import celery_app
 from app.models.job import Job
-from app.models.video import Video
 from app.models.transcript import Transcript
-from app.services.video_downloader import VideoDownloaderService
+from app.models.video import Video
 from app.services.transcriber import TranscriberService
+from app.services.video_downloader import VideoDownloaderService
 
 
 def get_sync_session() -> Session:
     """Get synchronous database session for Celery tasks."""
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
+
     from app.config import get_settings
 
     settings = get_settings()
@@ -106,7 +107,7 @@ def transcribe_video_task(
 
         # Update job with success
         job.status = "completed"
-        job.completed_at = datetime.now(timezone.utc)
+        job.completed_at = datetime.now(UTC)
         job.output_data = {
             "transcript_id": str(transcript.id),
             "video_id": video_id,
@@ -126,10 +127,10 @@ def transcribe_video_task(
         job = session.execute(select(Job).where(Job.id == job_id)).scalar_one()
         job.status = "failed"
         job.error_message = str(e)
-        job.completed_at = datetime.now(timezone.utc)
+        job.completed_at = datetime.now(UTC)
         session.commit()
 
-        raise self.retry(exc=e, countdown=60)
+        raise self.retry(exc=e, countdown=60) from e
 
     finally:
         session.close()

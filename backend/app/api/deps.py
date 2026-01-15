@@ -2,13 +2,13 @@
 
 from typing import Annotated
 
+import redis.asyncio as aioredis
 from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
-import redis.asyncio as aioredis
 
+from app.config import get_settings
 from app.core.database import get_db
 from app.core.redis import get_redis
-from app.config import get_settings
 
 settings = get_settings()
 
@@ -39,7 +39,7 @@ class RateLimiter:
 
     async def __call__(
         self,
-        request: Request,
+        _request: Request,
         redis: RedisClient,
         client_ip: ClientIP,
     ) -> None:

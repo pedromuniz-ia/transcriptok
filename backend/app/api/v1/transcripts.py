@@ -6,17 +6,16 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import Response
 from sqlalchemy import select
 
-from app.api.deps import DbSession, ClientIP, transcript_rate_limit
+from app.api.deps import ClientIP, DbSession, transcript_rate_limit
 from app.models.job import Job
 from app.models.transcript import Transcript
+from app.schemas.job import JobResponse
 from app.schemas.transcript import (
     TranscriptCreateRequest,
     TranscriptCreateResponse,
-    TranscriptResponse,
     TranscriptExportRequest,
-    ExportFormat,
+    TranscriptResponse,
 )
-from app.schemas.job import JobResponse
 from app.services.exporter import ExporterService
 from app.workers.transcribe_task import transcribe_video_task
 

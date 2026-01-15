@@ -1,82 +1,65 @@
 #!/usr/bin/env python3
 """Validate that all imports and configurations work correctly."""
 
+import importlib
 import sys
 
-def main():
-    errors = []
 
-    print("🔍 Validating imports...")
-
-    # Test core imports
+def _check(label: str, module_path: str, attrs: list[str] | None = None) -> str | None:
+    """Attempt to import a module and access selected attributes."""
     try:
-        from app.config import get_settings
-        print("  ✓ app.config")
-    except Exception as e:
-        errors.append(f"app.config: {e}")
-        print(f"  ✗ app.config: {e}")
+        module = importlib.import_module(module_path)
+        if attrs:
+            for attr in attrs:
+                getattr(module, attr)
+        print(f"[OK] {label}")
+        return None
+    except Exception as exc:  # pragma: no cover - utility script
+        message = f"{label}: {exc}"
+        print(f"[ERR] {message}")
+        return message
 
-    # Test models
-    try:
-        from app.models import Job, Video, Transcript
-        print("  ✓ app.models")
-    except Exception as e:
-        errors.append(f"app.models: {e}")
-        print(f"  ✗ app.models: {e}")
 
-    # Test schemas
-    try:
-        from app.schemas import VideoCreate, TranscriptCreate, JobResponse
-        print("  ✓ app.schemas")
-    except Exception as e:
-        errors.append(f"app.schemas: {e}")
-        print(f"  ✗ app.schemas: {e}")
+def main() -> None:
+    errors: list[str] = []
 
-    # Test services
-    try:
-        from app.services.video_downloader import VideoDownloaderService
-        from app.services.transcriber import TranscriberService
-        from app.services.exporter import ExporterService
-        from app.services.ai_agent import AIAgentService
-        print("  ✓ app.services")
-    except Exception as e:
-        errors.append(f"app.services: {e}")
-        print(f"  ✗ app.services: {e}")
+    print("Validating imports...")
 
-    # Test workers (celery tasks)
-    try:
-        from app.workers.download_task import download_video_task
-        from app.workers.transcribe_task import transcribe_video_task
-        print("  ✓ app.workers")
-    except Exception as e:
-        errors.append(f"app.workers: {e}")
-        print(f"  ✗ app.workers: {e}")
+    checks = [
+        ("app.config", "app.config", ["get_settings"]),
+        ("app.models", "app.models", ["Job", "Transcript", "Video"]),
+        ("app.schemas", "app.schemas", None),
+        (
+            "app.services",
+            "app.services",
+            [
+                "AIAgentService",
+                "ExporterService",
+                "TranscriberService",
+                "VideoDownloaderService",
+            ],
+        ),
+        ("app.workers.download_task", "app.workers.download_task", ["download_video_task"]),
+        ("app.workers.transcribe_task", "app.workers.transcribe_task", ["transcribe_video_task"]),
+        ("app.api.v1", "app.api.v1", ["router"]),
+        ("app.main", "app.main", ["app"]),
+    ]
 
-    # Test API routes
-    try:
-        from app.api.v1 import router
-        print("  ✓ app.api.v1")
-    except Exception as e:
-        errors.append(f"app.api.v1: {e}")
-        print(f"  ✗ app.api.v1: {e}")
-
-    # Test main app
-    try:
-        from app.main import app
-        print("  ✓ app.main")
-    except Exception as e:
-        errors.append(f"app.main: {e}")
-        print(f"  ✗ app.main: {e}")
+    for label, module_path, attrs in checks:
+        result = _check(label, module_path, attrs)
+        if result:
+            errors.append(result)
 
     print()
     if errors:
-        print(f"❌ Validation failed with {len(errors)} error(s)")
+        print(f"Validation failed with {len(errors)} error(s)")
         for error in errors:
-            print(f"   - {error}")
+            print(f" - {error}")
         sys.exit(1)
-    else:
-        print("✅ All validations passed!")
-        sys.exit(0)
+
+    print("All validations passed!")
+    sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

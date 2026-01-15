@@ -1,20 +1,20 @@
 """FastAPI application entry point."""
 
-from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.config import get_settings
 from app.api.v1.router import router as api_v1_router
+from app.config import get_settings
 
 settings = get_settings()
 docs_enabled = settings.docs_enabled if settings.docs_enabled is not None else settings.debug
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan handler."""
     # Startup
     yield

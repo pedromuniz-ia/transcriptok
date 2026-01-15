@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.api.v1 import videos, transcripts, ai_tools
+from app.api.v1 import ai_tools, transcripts, videos
 
 router = APIRouter()
 

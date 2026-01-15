@@ -1,18 +1,17 @@
 """Pytest fixtures and configuration."""
 
 import asyncio
-from collections.abc import AsyncGenerator
 import os
-from typing import Generator
+from collections.abc import AsyncGenerator, Generator
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.engine import make_url
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.main import app
-from app.core.database import Base, get_db
 from app.config import get_settings
+from app.core.database import Base, get_db
+from app.main import app
 
 settings = get_settings()
 

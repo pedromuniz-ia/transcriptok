@@ -1,14 +1,19 @@
 """Video model for metadata caching."""
 
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import DateTime, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+
+if TYPE_CHECKING:
+    from app.models.transcript import Transcript
 
 
 class Video(Base):
@@ -62,7 +67,7 @@ class Video(Base):
     )
 
     # Relationships
-    transcripts: Mapped[list["Transcript"]] = relationship(
+    transcripts: Mapped[list[Transcript]] = relationship(
         "Transcript",
         back_populates="video",
         lazy="selectin",
