@@ -18,7 +18,7 @@ services:
       - APP_ENV=production
       - DEBUG=false
       - DOCS_ENABLED=true
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/transcriptok
+      - DATABASE_URL=postgresql+asyncpg://postgres:Sa4HbzAt0Ywya1JC5bPz9d@postgres:5432/transcriptok
       - REDIS_URL=redis://redis:6379/0
       - WHISPER_MODE=api
       - OPENAI_API_KEY=${OPENAI_API_KEY}
