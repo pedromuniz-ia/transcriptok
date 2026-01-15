@@ -2,6 +2,7 @@
 
 import asyncio
 from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -28,13 +29,13 @@ def get_sync_session() -> Session:
     return SessionLocal()
 
 
-@celery_app.task(bind=True, max_retries=3)
+@celery_app.task(bind=True, max_retries=3)  # type: ignore[untyped-decorator]
 def transcribe_video_task(
-    self,
+    self: Any,
     job_id: str,
     video_url: str | None = None,
     download_job_id: str | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Transcribe video in background."""
     session = get_sync_session()
 

@@ -1,6 +1,7 @@
 """Video download Celery task."""
 
 from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -8,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.core.celery import celery_app
 from app.models.job import Job
 from app.models.video import Video
+from app.schemas.video import VideoQuality
 from app.services.video_downloader import VideoDownloaderService
 
 
@@ -26,14 +28,14 @@ def get_sync_session() -> Session:
     return SessionLocal()
 
 
-@celery_app.task(bind=True, max_retries=3)
+@celery_app.task(bind=True, max_retries=3)  # type: ignore[untyped-decorator]
 def download_video_task(
-    self,
+    self: Any,
     job_id: str,
     url: str,
     quality: str,
     remove_watermark: bool,
-) -> dict:
+) -> dict[str, Any]:
     """Download video in background."""
     session = get_sync_session()
 
@@ -45,7 +47,11 @@ def download_video_task(
 
         # Download video
         service = VideoDownloaderService()
-        result = service.download(url, quality, remove_watermark)
+        try:
+            quality_enum = VideoQuality(quality)
+        except ValueError:
+            quality_enum = VideoQuality.BEST
+        result = service.download(url, quality_enum, remove_watermark)
 
         # Check if video already exists
         existing = session.execute(

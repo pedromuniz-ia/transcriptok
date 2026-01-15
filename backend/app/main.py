@@ -45,13 +45,13 @@ app.include_router(api_v1_router, prefix=settings.api_v1_prefix)
 
 
 @app.get("/health")
-async def health_check() -> dict:
+async def health_check() -> dict[str, str]:
     """Health check endpoint."""
     return {"status": "healthy", "version": "0.1.0"}
 
 
 @app.get("/")
-async def root() -> dict:
+async def root() -> dict[str, str | None]:
     """Root endpoint."""
     return {
         "app": settings.app_name,

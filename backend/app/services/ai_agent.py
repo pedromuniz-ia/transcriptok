@@ -37,7 +37,7 @@ class AIAgentService:
         RewriteGoal.CLEARER: "Simplify language and improve clarity",
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.model = OpenAIChat(
             id="gpt-4o-mini",
             api_key=settings.openai_api_key,
@@ -47,9 +47,16 @@ class AIAgentService:
         """Create an agent with the given system prompt."""
         return Agent(
             model=self.model,
-            system_prompt=system_prompt,
+            system_message=system_prompt,
             markdown=False,
         )
+
+    def _extract_content(self, response: Any) -> str:
+        """Normalize agent responses to plain text."""
+        content = response.content if hasattr(response, "content") else response
+        if content is None:
+            return ""
+        return str(content)
 
     async def generate_hooks(self, input_data: HookGeneratorInput) -> HookGeneratorOutput:
         """Generate viral hooks for video content."""
@@ -76,7 +83,7 @@ Rules:
 {input_data.transcript}"""
 
         response = await agent.arun(user_prompt)
-        content = response.content if hasattr(response, "content") else str(response)
+        content = self._extract_content(response)
 
         # Parse hooks from response
         hooks = self._parse_numbered_list(content)
@@ -109,7 +116,7 @@ Rules:
 {input_data.original_script}"""
 
         response = await agent.arun(user_prompt)
-        content = response.content if hasattr(response, "content") else str(response)
+        content = self._extract_content(response)
 
         # Parse response (script + optional summary)
         parts = content.split("---")
@@ -143,7 +150,7 @@ Be specific and actionable in your analysis."""
 {input_data.transcript}"""
 
         response = await agent.arun(user_prompt)
-        content = response.content if hasattr(response, "content") else str(response)
+        content = self._extract_content(response)
 
         # Parse JSON response
         import json

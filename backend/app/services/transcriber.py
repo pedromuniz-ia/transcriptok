@@ -12,10 +12,10 @@ settings = get_settings()
 class TranscriberService:
     """Service for transcribing audio using Whisper."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.mode = settings.whisper_mode
         self.model = settings.whisper_model
-        self._local_model = None
+        self._local_model: Any | None = None
 
     def _get_local_model(self) -> Any:
         """Lazy load local Whisper model."""
@@ -26,8 +26,8 @@ class TranscriberService:
 
     def extract_audio(self, video_path: str) -> str:
         """Extract audio from video using FFmpeg."""
-        video_path = Path(video_path)
-        audio_path = video_path.with_suffix(".mp3")
+        video_path_obj = Path(video_path)
+        audio_path = video_path_obj.with_suffix(".mp3")
 
         cmd = [
             "ffmpeg",
@@ -116,14 +116,16 @@ class TranscriberService:
     def _calculate_confidence(self, result: dict[str, Any]) -> float | None:
         """Calculate average confidence from segments."""
         segments = result.get("segments", [])
-        if not segments:
+        if not isinstance(segments, list) or not segments:
             return None
 
-        probs = []
+        probs: list[float] = []
         for segment in segments:
-            if "no_speech_prob" in segment:
-                # Convert no_speech_prob to speech confidence
-                probs.append(1 - segment["no_speech_prob"])
+            if isinstance(segment, dict):
+                prob = segment.get("no_speech_prob")
+                if isinstance(prob, (int, float)):
+                    # Convert no_speech_prob to speech confidence
+                    probs.append(1.0 - float(prob))
 
         if probs:
             return sum(probs) / len(probs)
