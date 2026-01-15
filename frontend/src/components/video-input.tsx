@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { Loader2, Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { isValidVideoUrl } from "@/lib/utils";
-import { TranscriptResult } from "@/components/transcript-result";
-import { useTranscript } from "@/hooks/use-transcript";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { TranscriptResult } from "./transcript-result";
+import { useTranscript } from "../hooks/use-transcript";
+import { isValidVideoUrl } from "../lib/utils";
 
 export function VideoInput() {
   const [url, setUrl] = useState("");

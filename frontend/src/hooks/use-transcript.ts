@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { api, type TranscriptResponse, type JobResponse } from "@/lib/api";
-import { JOB_POLL_INTERVAL, MAX_POLL_ATTEMPTS } from "@/lib/constants";
+import { api, type TranscriptResponse, type JobResponse } from "../lib/api";
+import { JOB_POLL_INTERVAL, MAX_POLL_ATTEMPTS } from "../lib/constants";
 
 interface VideoInfo {
   title?: string;

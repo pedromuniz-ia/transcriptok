@@ -10,9 +10,9 @@ import {
   FileText,
   Check,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import type { TranscriptResponse } from "@/lib/api";
+import { Button } from "./ui/button";
+import { Card, CardContent } from "./ui/card";
+import type { TranscriptResponse } from "../lib/api";
 
 interface TranscriptResultProps {
   result: {

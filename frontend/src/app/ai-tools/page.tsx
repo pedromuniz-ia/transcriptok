@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Sparkles, RefreshCw, BarChart3, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { HOOK_STYLES, REWRITE_GOALS } from "@/lib/constants";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../components/ui/card";
+import { HOOK_STYLES, REWRITE_GOALS } from "../../lib/constants";
 
 export default function AIToolsPage() {
   const [activeTab, setActiveTab] = useState<"hooks" | "rewrite" | "analyze">("hooks");

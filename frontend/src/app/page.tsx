@@ -1,5 +1,5 @@
-import { VideoInput } from "@/components/video-input";
-import { TranscriptHistory } from "@/components/transcript-history";
+import { VideoInput } from "../components/video-input";
+import { TranscriptHistory } from "../components/transcript-history";
 
 export default function Home() {
   return (
