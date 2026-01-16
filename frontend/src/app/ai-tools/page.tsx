@@ -1,57 +1,100 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Sparkles, RefreshCw, BarChart3, Loader2 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../components/ui/card";
 import { HOOK_STYLES, REWRITE_GOALS } from "../../lib/constants";
+import { api, type ContentAnalyzerOutput } from "../../lib/api";
+
+type ToolTab = "hooks" | "rewrite" | "analyze";
+
+type ToolResult =
+  | { kind: "hooks"; hooks: string[] }
+  | { kind: "rewrite"; text: string; summary?: string | null }
+  | { kind: "analyze"; data: ContentAnalyzerOutput };
+
+const isToolTab = (value: string | null): value is ToolTab =>
+  value === "hooks" || value === "rewrite" || value === "analyze";
 
 export default function AIToolsPage() {
-  const [activeTab, setActiveTab] = useState<"hooks" | "rewrite" | "analyze">("hooks");
+  const searchParams = useSearchParams();
+  const initRef = useRef(false);
+  const [activeTab, setActiveTab] = useState<ToolTab>("hooks");
   const [transcript, setTranscript] = useState("");
-  const [hookStyle, setHookStyle] = useState("curiosity");
-  const [rewriteGoal, setRewriteGoal] = useState("more_viral");
+  const [hookStyle, setHookStyle] = useState<"curiosity" | "shock" | "question" | "story">("curiosity");
+  const [rewriteGoal, setRewriteGoal] = useState<"more_viral" | "shorter" | "clearer">("more_viral");
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<string[] | string | null>(null);
+  const [result, setResult] = useState<ToolResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initRef.current) return;
+    initRef.current = true;
+
+    const storedTranscript = window.sessionStorage.getItem("ai-tools-input");
+    if (storedTranscript) {
+      setTranscript(storedTranscript);
+    }
+
+    const paramTool = searchParams.get("tool");
+    const storedTool = window.sessionStorage.getItem("ai-tools-tab");
+    const targetTab = isToolTab(paramTool) ? paramTool : isToolTab(storedTool) ? storedTool : null;
+    if (targetTab) {
+      setActiveTab(targetTab);
+    }
+  }, [searchParams]);
 
   const handleGenerate = async () => {
     if (!transcript.trim()) return;
     setIsLoading(true);
     setResult(null);
+    setError(null);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    if (activeTab === "hooks") {
-      setResult([
-        "You won't believe what happens next...",
-        "This changed everything I thought I knew about...",
-        "3 seconds in, my jaw dropped...",
-        "Everyone is talking about this, but nobody knows...",
-        "Stop scrolling! This is the secret to...",
-      ]);
-    } else if (activeTab === "rewrite") {
-      setResult(
-        "Here's your rewritten script optimized for maximum engagement and virality. The key changes focus on a stronger hook, clearer call-to-action, and better pacing for short-form video format."
-      );
+    try {
+      if (activeTab === "hooks") {
+        const response = await api.generateHooks({
+          transcript,
+          style: hookStyle,
+          count: 5,
+        });
+        setResult({ kind: "hooks", hooks: response.hooks });
+      } else if (activeTab === "rewrite") {
+        const response = await api.rewriteScript({
+          original_script: transcript,
+          goal: rewriteGoal,
+          tone: "casual",
+        });
+        setResult({
+          kind: "rewrite",
+          text: response.rewritten_script,
+          summary: response.changes_summary,
+        });
+      } else {
+        const response = await api.analyzeContent({ transcript });
+        setResult({ kind: "analyze", data: response });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha ao gerar resposta");
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   const tabs = [
-    { id: "hooks", label: "Write Hooks", icon: Sparkles },
-    { id: "rewrite", label: "Rewrite Script", icon: RefreshCw },
-    { id: "analyze", label: "Analyze Content", icon: BarChart3 },
+    { id: "hooks", label: "Criar ganchos", icon: Sparkles },
+    { id: "rewrite", label: "Reescrever roteiro", icon: RefreshCw },
+    { id: "analyze", label: "Analisar conteudo", icon: BarChart3 },
   ] as const;
 
   return (
     <div className="py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">AI Tools</h1>
+          <h1 className="text-3xl font-bold mb-2">Ferramentas de IA</h1>
           <p className="text-muted-foreground">
-            Supercharge your content with AI-powered tools
+            Potencialize seu conteudo com ferramentas de IA
           </p>
         </div>
 
@@ -64,6 +107,7 @@ export default function AIToolsPage() {
               onClick={() => {
                 setActiveTab(tab.id);
                 setResult(null);
+                setError(null);
               }}
             >
               <tab.icon className="w-4 h-4 mr-2" />
@@ -76,24 +120,24 @@ export default function AIToolsPage() {
           {/* Input */}
           <Card>
             <CardHeader>
-              <CardTitle>Input</CardTitle>
+              <CardTitle>Entrada</CardTitle>
               <CardDescription>
-                {activeTab === "hooks" && "Enter your transcript or topic to generate viral hooks"}
-                {activeTab === "rewrite" && "Paste your script to get an optimized version"}
-                {activeTab === "analyze" && "Paste your content for virality analysis"}
+                {activeTab === "hooks" && "Informe sua transcricao ou tema para gerar ganchos virais"}
+                {activeTab === "rewrite" && "Cole seu roteiro para receber uma versao otimizada"}
+                {activeTab === "analyze" && "Cole seu conteudo para analise de viralidade"}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <textarea
                 value={transcript}
                 onChange={(e) => setTranscript(e.target.value)}
-                placeholder="Paste your transcript or script here..."
+                placeholder="Cole sua transcricao ou roteiro aqui..."
                 className="w-full h-48 p-3 rounded-lg bg-secondary border border-border resize-none focus:outline-none focus:ring-2 focus:ring-ring"
               />
 
               {activeTab === "hooks" && (
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Hook Style</label>
+                  <label className="text-sm font-medium mb-2 block">Estilo de gancho</label>
                   <div className="grid grid-cols-2 gap-2">
                     {HOOK_STYLES.map((style) => (
                       <Button
@@ -112,7 +156,7 @@ export default function AIToolsPage() {
 
               {activeTab === "rewrite" && (
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Rewrite Goal</label>
+                  <label className="text-sm font-medium mb-2 block">Objetivo da reescrita</label>
                   <div className="grid grid-cols-3 gap-2">
                     {REWRITE_GOALS.map((goal) => (
                       <Button
@@ -136,12 +180,12 @@ export default function AIToolsPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generating...
+                    Gerando...
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 mr-2" />
-                    Generate
+                    Gerar
                   </>
                 )}
               </Button>
@@ -151,17 +195,17 @@ export default function AIToolsPage() {
           {/* Output */}
           <Card>
             <CardHeader>
-              <CardTitle>Result</CardTitle>
+              <CardTitle>Resultado</CardTitle>
               <CardDescription>
-                {activeTab === "hooks" && "Generated viral hooks"}
-                {activeTab === "rewrite" && "Optimized script"}
-                {activeTab === "analyze" && "Content analysis"}
+                {activeTab === "hooks" && "Ganchos virais gerados"}
+                {activeTab === "rewrite" && "Roteiro otimizado"}
+                {activeTab === "analyze" && "Analise de conteudo"}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {!result && !isLoading && (
                 <div className="h-48 flex items-center justify-center text-muted-foreground">
-                  Results will appear here
+                  Os resultados vao aparecer aqui
                 </div>
               )}
 
@@ -171,9 +215,9 @@ export default function AIToolsPage() {
                 </div>
               )}
 
-              {result && Array.isArray(result) && (
+              {result?.kind === "hooks" && (
                 <div className="space-y-3">
-                  {result.map((hook, i) => (
+                  {result.hooks.map((hook, i) => (
                     <div
                       key={i}
                       className="p-3 rounded-lg bg-secondary border border-border hover:border-primary transition-colors cursor-pointer"
@@ -185,10 +229,71 @@ export default function AIToolsPage() {
                 </div>
               )}
 
-              {result && typeof result === "string" && (
-                <div className="p-4 rounded-lg bg-secondary border border-border whitespace-pre-wrap">
-                  {result}
+              {result?.kind === "rewrite" && (
+                <div className="space-y-3">
+                  <div className="p-4 rounded-lg bg-secondary border border-border whitespace-pre-wrap">
+                    {result.text}
+                  </div>
+                  {result.summary && (
+                    <div className="p-4 rounded-lg bg-secondary border border-border">
+                      <p className="text-xs text-muted-foreground mb-2">Resumo das mudancas</p>
+                      <p className="text-sm whitespace-pre-wrap">{result.summary}</p>
+                    </div>
+                  )}
                 </div>
+              )}
+
+              {result?.kind === "analyze" && (
+                <div className="space-y-4">
+                  <div className="p-4 rounded-lg bg-secondary border border-border">
+                    <p className="text-xs text-muted-foreground">Pontuacao de viralidade</p>
+                    <p className="text-2xl font-bold">
+                      {Math.round(result.data.virality_score)}
+                    </p>
+                  </div>
+                  <div className="grid gap-4">
+                    <div className="p-4 rounded-lg bg-secondary border border-border">
+                      <p className="text-xs text-muted-foreground mb-2">Pontos fortes</p>
+                      <ul className="space-y-1 text-sm">
+                        {result.data.strengths.length > 0 ? (
+                          result.data.strengths.map((item, index) => (
+                            <li key={index}>- {item}</li>
+                          ))
+                        ) : (
+                          <li>- Sem dados</li>
+                        )}
+                      </ul>
+                    </div>
+                    <div className="p-4 rounded-lg bg-secondary border border-border">
+                      <p className="text-xs text-muted-foreground mb-2">Melhorias</p>
+                      <ul className="space-y-1 text-sm">
+                        {result.data.improvements.length > 0 ? (
+                          result.data.improvements.map((item, index) => (
+                            <li key={index}>- {item}</li>
+                          ))
+                        ) : (
+                          <li>- Sem dados</li>
+                        )}
+                      </ul>
+                    </div>
+                    <div className="p-4 rounded-lg bg-secondary border border-border">
+                      <p className="text-xs text-muted-foreground mb-2">Ganchos sugeridos</p>
+                      <ul className="space-y-1 text-sm">
+                        {result.data.suggested_hooks.length > 0 ? (
+                          result.data.suggested_hooks.map((item, index) => (
+                            <li key={index}>- {item}</li>
+                          ))
+                        ) : (
+                          <li>- Sem dados</li>
+                        )}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {error && !isLoading && (
+                <p className="mt-4 text-sm text-red-400">{error}</p>
               )}
             </CardContent>
           </Card>

@@ -7,29 +7,29 @@ export const SUPPORTED_PLATFORMS = [
 ] as const;
 
 export const VIDEO_QUALITIES = [
-  { value: "best", label: "Best Quality" },
+  { value: "best", label: "Melhor qualidade" },
   { value: "720p", label: "HD (720p)" },
   { value: "480p", label: "SD (480p)" },
 ] as const;
 
 export const EXPORT_FORMATS = [
-  { value: "txt", label: "Text (.txt)", mime: "text/plain" },
+  { value: "txt", label: "Texto (.txt)", mime: "text/plain" },
   { value: "json", label: "JSON (.json)", mime: "application/json" },
-  { value: "srt", label: "SRT Subtitles (.srt)", mime: "application/x-subrip" },
-  { value: "vtt", label: "WebVTT (.vtt)", mime: "text/vtt" },
+  { value: "srt", label: "Legendas SRT (.srt)", mime: "application/x-subrip" },
+  { value: "vtt", label: "Legendas WebVTT (.vtt)", mime: "text/vtt" },
 ] as const;
 
 export const HOOK_STYLES = [
-  { value: "curiosity", label: "Curiosity", description: "Spark interest and intrigue" },
-  { value: "shock", label: "Shock", description: "Surprising attention-grabbers" },
-  { value: "question", label: "Question", description: "Thought-provoking questions" },
-  { value: "story", label: "Story", description: "Compelling narrative hooks" },
+  { value: "curiosity", label: "Curiosidade", description: "Desperta interesse e curiosidade" },
+  { value: "shock", label: "Choque", description: "Surpreendente e chamativo" },
+  { value: "question", label: "Pergunta", description: "Perguntas que instigam" },
+  { value: "story", label: "Historia", description: "Ganchos narrativos envolventes" },
 ] as const;
 
 export const REWRITE_GOALS = [
-  { value: "more_viral", label: "More Viral", description: "Maximize engagement" },
-  { value: "shorter", label: "Shorter", description: "Condense while keeping impact" },
-  { value: "clearer", label: "Clearer", description: "Improve clarity" },
+  { value: "more_viral", label: "Mais viral", description: "Maximizar engajamento" },
+  { value: "shorter", label: "Mais curto", description: "Resumir mantendo o impacto" },
+  { value: "clearer", label: "Mais claro", description: "Melhorar a clareza" },
 ] as const;
 
 export const JOB_POLL_INTERVAL = 2000; // 2 seconds

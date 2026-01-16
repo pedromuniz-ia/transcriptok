@@ -45,6 +45,13 @@ export interface ScriptRewriterInput {
   tone?: string;
 }
 
+export interface ContentAnalyzerOutput {
+  virality_score: number;
+  strengths: string[];
+  improvements: string[];
+  suggested_hooks: string[];
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -72,7 +79,7 @@ class ApiClient {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
-      throw new Error(error.detail || `API Error: ${response.status}`);
+      throw new Error(error.detail || `Erro da API: ${response.status}`);
     }
 
     return response.json();
@@ -123,7 +130,7 @@ class ApiClient {
     );
 
     if (!response.ok) {
-      throw new Error("Export failed");
+      throw new Error("Falha ao exportar");
     }
 
     return response.blob();
@@ -152,6 +159,17 @@ class ApiClient {
       method: "POST",
       body: JSON.stringify(input),
     });
+    return response.output;
+  }
+
+  async analyzeContent(input: { transcript: string }): Promise<ContentAnalyzerOutput> {
+    const response = await this.request<{ output: ContentAnalyzerOutput }>(
+      "/api/v1/ai/analyze",
+      {
+        method: "POST",
+        body: JSON.stringify(input),
+      }
+    );
     return response.output;
   }
 

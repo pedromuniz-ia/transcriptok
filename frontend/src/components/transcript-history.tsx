@@ -24,20 +24,26 @@ const mockTranscripts: Array<{
   status: "complete" | "processing" | "failed";
 }> = [];
 
+const STATUS_LABELS: Record<"complete" | "processing" | "failed", string> = {
+  complete: "Concluido",
+  processing: "Processando",
+  failed: "Falhou",
+};
+
 export function TranscriptHistory() {
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Transcript History</h2>
+          <h2 className="text-2xl font-bold">Historico de transcricoes</h2>
           <p className="text-muted-foreground">
-            Global archive of all processed videos and collections
+            Arquivo global de videos e colecoes processados
           </p>
         </div>
         <Button variant="outline">
           <Download className="w-4 h-4 mr-2" />
-          Export All
+          Exportar tudo
         </Button>
       </div>
 
@@ -50,7 +56,7 @@ export function TranscriptHistory() {
             </div>
             <div>
               <p className="text-2xl font-bold">{mockStats.total}</p>
-              <p className="text-xs text-muted-foreground">Total Transcripts</p>
+              <p className="text-xs text-muted-foreground">Total de transcricoes</p>
             </div>
           </CardContent>
         </Card>
@@ -62,7 +68,7 @@ export function TranscriptHistory() {
             </div>
             <div>
               <p className="text-2xl font-bold">{mockStats.processed}</p>
-              <p className="text-xs text-muted-foreground">Successfully Processed</p>
+              <p className="text-xs text-muted-foreground">Processados com sucesso</p>
             </div>
           </CardContent>
         </Card>
@@ -74,7 +80,7 @@ export function TranscriptHistory() {
             </div>
             <div>
               <p className="text-2xl font-bold">{mockStats.processing}</p>
-              <p className="text-xs text-muted-foreground">Currently Processing</p>
+              <p className="text-xs text-muted-foreground">Em processamento</p>
             </div>
           </CardContent>
         </Card>
@@ -86,7 +92,7 @@ export function TranscriptHistory() {
             </div>
             <div>
               <p className="text-2xl font-bold">{mockStats.failed}</p>
-              <p className="text-xs text-muted-foreground">Failed/Errors</p>
+              <p className="text-xs text-muted-foreground">Falhas/Erros</p>
             </div>
           </CardContent>
         </Card>
@@ -97,16 +103,16 @@ export function TranscriptHistory() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search transcripts..."
+            placeholder="Buscar transcricoes..."
             className="pl-10"
           />
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">
-            Status: All
+            Status: Todos
           </Button>
           <Button variant="outline" size="sm">
-            Platform: All
+            Plataforma: Todas
           </Button>
         </div>
       </div>
@@ -116,9 +122,9 @@ export function TranscriptHistory() {
         <Card>
           <CardContent className="py-12 text-center">
             <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">No transcripts yet</h3>
+            <h3 className="text-lg font-medium mb-2">Nenhuma transcricao ainda</h3>
             <p className="text-muted-foreground">
-              Paste a video URL above to get started
+              Cole uma URL de video acima para comecar
             </p>
           </CardContent>
         </Card>
@@ -129,16 +135,16 @@ export function TranscriptHistory() {
               <thead>
                 <tr className="border-b border-border">
                   <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                    Content
+                    Conteudo
                   </th>
                   <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                    Platform
+                    Plataforma
                   </th>
                   <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                    Date
+                    Data
                   </th>
                   <th className="text-left p-4 text-sm font-medium text-muted-foreground">
-                    Duration
+                    Duracao
                   </th>
                   <th className="text-left p-4 text-sm font-medium text-muted-foreground">
                     Status
@@ -179,7 +185,7 @@ export function TranscriptHistory() {
                         {item.status === "complete" && (
                           <CheckCircle className="w-3 h-3 mr-1" />
                         )}
-                        {item.status}
+                        {STATUS_LABELS[item.status]}
                       </Badge>
                     </td>
                   </tr>

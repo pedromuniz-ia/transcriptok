@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Copy,
   Download,
@@ -28,8 +29,17 @@ interface TranscriptResultProps {
 
 export function TranscriptResult({ result }: TranscriptResultProps) {
   const { transcript, videoInfo } = result;
+  const router = useRouter();
   const [showTimestamps, setShowTimestamps] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const openAiTools = (tool: "hooks" | "rewrite" | "analyze") => {
+    try {
+      window.sessionStorage.setItem("ai-tools-input", transcript.full_text);
+      window.sessionStorage.setItem("ai-tools-tab", tool);
+    } catch {}
+    router.push(`/ai-tools?tool=${tool}`);
+  };
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(transcript.full_text);
@@ -60,7 +70,7 @@ export function TranscriptResult({ result }: TranscriptResultProps) {
                 <div className="relative aspect-[9/16] rounded-lg overflow-hidden bg-secondary mb-4">
                   <Image
                     src={videoInfo.thumbnail_url}
-                    alt={videoInfo.title || "Video thumbnail"}
+                    alt={videoInfo.title || "Miniatura do video"}
                     fill
                     className="object-cover"
                   />
@@ -85,11 +95,11 @@ export function TranscriptResult({ result }: TranscriptResultProps) {
               <div className="flex gap-2 mt-4">
                 <Button variant="secondary" size="sm" className="flex-1">
                   <Download className="w-4 h-4 mr-1" />
-                  Save Cover
+                  Salvar capa
                 </Button>
                 <Button variant="secondary" size="sm" className="flex-1">
                   <Download className="w-4 h-4 mr-1" />
-                  Download Video
+                  Baixar video
                 </Button>
               </div>
             </div>
@@ -99,20 +109,20 @@ export function TranscriptResult({ result }: TranscriptResultProps) {
               {/* AI Tools Header */}
               <div className="mb-4">
                 <p className="text-xs text-muted-foreground mb-2">
-                  You can do more with TranscripTok AI
+                  Voce pode fazer mais com a IA do TranscripTok
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => openAiTools("hooks")}>
                     <Sparkles className="w-3 h-3 mr-1" />
-                    Write hooks
+                    Criar ganchos
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => openAiTools("rewrite")}>
                     <RefreshCw className="w-3 h-3 mr-1" />
-                    Rewrite scripts
+                    Reescrever roteiro
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => openAiTools("analyze")}>
                     <FileText className="w-3 h-3 mr-1" />
-                    Get framework
+                    Gerar estrutura
                   </Button>
                 </div>
               </div>
@@ -126,7 +136,7 @@ export function TranscriptResult({ result }: TranscriptResultProps) {
                     onChange={(e) => setShowTimestamps(e.target.checked)}
                     className="rounded border-border"
                   />
-                  Show timestamps
+                  Mostrar timestamps
                 </label>
                 <div className="flex gap-1">
                   <Button
@@ -157,9 +167,9 @@ export function TranscriptResult({ result }: TranscriptResultProps) {
               {/* Metadata */}
               {transcript.language && (
                 <p className="mt-3 text-xs text-muted-foreground">
-                  Language: {transcript.language.toUpperCase()}
-                  {transcript.confidence && (
-                    <> • Confidence: {(transcript.confidence * 100).toFixed(0)}%</>
+                  Idioma: {transcript.language.toUpperCase()}
+                  {transcript.confidence !== undefined && (
+                    <> | Confianca: {(transcript.confidence * 100).toFixed(0)}%</>
                   )}
                 </p>
               )}

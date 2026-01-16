@@ -37,14 +37,14 @@ export function useTranscript() {
       }
 
       if (job.status === "failed") {
-        throw new Error(job.error_message || "Job failed");
+        throw new Error(job.error_message || "Falha no processamento");
       }
 
       attempts++;
       await new Promise((resolve) => setTimeout(resolve, JOB_POLL_INTERVAL));
     }
 
-    throw new Error("Job timed out");
+    throw new Error("Tempo limite esgotado");
   };
 
   const processVideo = useCallback(async (url: string) => {
@@ -54,11 +54,11 @@ export function useTranscript() {
 
     try {
       // Step 1: Download video
-      setStatus("Downloading video...");
+      setStatus("Baixando video...");
       const downloadResponse = await api.downloadVideo({ url });
 
       // Step 2: Poll download job
-      setStatus("Processing video...");
+      setStatus("Processando video...");
       const downloadJob = await pollJob(
         downloadResponse.job_id,
         api.getVideoJob.bind(api)
@@ -72,13 +72,13 @@ export function useTranscript() {
       };
 
       // Step 3: Create transcript
-      setStatus("Transcribing audio...");
+      setStatus("Transcrevendo audio...");
       const transcriptResponse = await api.createTranscript({
         job_id: downloadResponse.job_id,
       });
 
       // Step 4: Poll transcript job
-      setStatus("Generating transcript...");
+      setStatus("Gerando transcricao...");
       const transcriptJob = await pollJob(
         transcriptResponse.job_id,
         api.getTranscriptJob.bind(api)
@@ -94,7 +94,7 @@ export function useTranscript() {
       });
       setStatus("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(err instanceof Error ? err.message : "Ocorreu um erro");
       setStatus("");
     } finally {
       setIsLoading(false);

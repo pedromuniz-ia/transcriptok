@@ -8,11 +8,10 @@ export default function Home() {
       <section className="hero-gradient py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Paste your video link here
+            Cole o link do seu video aqui
           </h1>
           <p className="text-muted-foreground text-lg mb-8">
-            Paste your TikTok, YouTube Shorts, or Instagram Reels link to get
-            started.
+            Cole o link do TikTok, YouTube Shorts ou Instagram Reels para comecar.
           </p>
           <VideoInput />
         </div>

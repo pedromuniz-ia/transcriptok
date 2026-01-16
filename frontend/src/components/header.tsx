@@ -22,13 +22,13 @@ export function Header() {
             href="/"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            Home
+            Inicio
           </Link>
           <Link
             href="/ai-tools"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            AI Tools
+            Ferramentas IA
           </Link>
           <a
             href="https://github.com"
@@ -43,7 +43,7 @@ export function Header() {
         {/* Actions */}
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm">
-            Support
+            Suporte
           </Button>
         </div>
       </div>

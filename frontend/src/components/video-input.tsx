@@ -28,7 +28,7 @@ export function VideoInput() {
       <div className="space-y-4">
         <TranscriptResult result={result} />
         <Button variant="outline" onClick={handleNewVideo}>
-          Process Another Video
+          Processar outro video
         </Button>
       </div>
     );
@@ -41,7 +41,7 @@ export function VideoInput() {
           type="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="Paste your video link here..."
+          placeholder="Cole o link do seu video aqui..."
           className="flex-1 border-0 bg-transparent focus:ring-0 text-base"
           disabled={isLoading}
         />
@@ -54,12 +54,12 @@ export function VideoInput() {
           {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Processing...
+              Processando...
             </>
           ) : (
             <>
               <Download className="w-4 h-4" />
-              Download
+              Baixar
             </>
           )}
         </Button>
@@ -71,7 +71,7 @@ export function VideoInput() {
 
       {url && !isValidVideoUrl(url) && (
         <p className="mt-4 text-sm text-yellow-400 text-center">
-          Please enter a valid TikTok, YouTube Shorts, or Instagram Reels URL
+          Digite uma URL valida do TikTok, YouTube Shorts ou Instagram Reels
         </p>
       )}
     </form>

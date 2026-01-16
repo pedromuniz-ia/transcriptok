@@ -25,16 +25,16 @@ class AIAgentService:
     """Service for AI-powered content tools using Agno."""
 
     HOOK_STYLE_PROMPTS = {
-        HookStyle.CURIOSITY: "Create hooks that spark curiosity and make viewers want to learn more",
-        HookStyle.SHOCK: "Create surprising, attention-grabbing hooks that shock the viewer",
-        HookStyle.QUESTION: "Create thought-provoking questions that engage the viewer",
-        HookStyle.STORY: "Create hooks that start a compelling story or narrative",
+        HookStyle.CURIOSITY: "Crie ganchos que despertem curiosidade e facam o publico querer saber mais",
+        HookStyle.SHOCK: "Crie ganchos surpreendentes e chamativos que choquem o publico",
+        HookStyle.QUESTION: "Crie perguntas instigantes que engajem o publico",
+        HookStyle.STORY: "Crie ganchos que iniciem uma historia ou narrativa envolvente",
     }
 
     REWRITE_GOAL_PROMPTS = {
-        RewriteGoal.MORE_VIRAL: "Rewrite to maximize engagement and shareability",
-        RewriteGoal.SHORTER: "Condense while keeping the core message impactful",
-        RewriteGoal.CLEARER: "Simplify language and improve clarity",
+        RewriteGoal.MORE_VIRAL: "Reescreva para maximizar engajamento e compartilhamento",
+        RewriteGoal.SHORTER: "Resuma mantendo a mensagem principal com impacto",
+        RewriteGoal.CLEARER: "Simplifique a linguagem e aumente a clareza",
     }
 
     def __init__(self) -> None:
@@ -64,21 +64,22 @@ class AIAgentService:
             input_data.style, self.HOOK_STYLE_PROMPTS[HookStyle.CURIOSITY]
         )
 
-        system_prompt = f"""You are an expert viral content creator specializing in short-form video hooks.
-Your task is to create compelling opening hooks for videos.
+        system_prompt = f"""Voce e um criador de conteudo viral especializado em ganchos para videos curtos.
+Sua tarefa e criar ganchos de abertura convincentes para videos.
 
 {style_instruction}
 
-Rules:
-- Each hook should be 1-2 sentences max
-- Hooks must be attention-grabbing within the first 3 seconds
-- Use power words and emotional triggers
-- Be concise and punchy
-- Output ONLY the hooks, one per line, numbered"""
+Regras:
+- Cada gancho deve ter no maximo 1-2 frases
+- Os ganchos precisam prender a atencao nos primeiros 3 segundos
+- Use palavras fortes e gatilhos emocionais
+- Seja direto e impactante
+- Responda apenas com os ganchos, um por linha, numerados
+- Responda sempre em portugues do Brasil"""
 
         agent = self._create_agent(system_prompt)
 
-        user_prompt = f"""Based on this transcript/topic, generate {input_data.count} viral hooks:
+        user_prompt = f"""Com base neste texto/tema, gere {input_data.count} ganchos virais:
 
 {input_data.transcript}"""
 
@@ -96,22 +97,23 @@ Rules:
             input_data.goal, self.REWRITE_GOAL_PROMPTS[RewriteGoal.MORE_VIRAL]
         )
 
-        system_prompt = f"""You are an expert video script writer specializing in viral short-form content.
-Your task is to rewrite scripts for maximum engagement.
+        system_prompt = f"""Voce e um roteirista especializado em conteudo viral de videos curtos.
+Sua tarefa e reescrever roteiros para maximo engajamento.
 
-Goal: {goal_instruction}
-Tone: {input_data.tone}
+Objetivo: {goal_instruction}
+Tom: {input_data.tone}
 
-Rules:
-- Maintain the core message
-- Optimize for the specified goal
-- Keep the specified tone throughout
-- Make it suitable for 15-60 second videos
-- First output the rewritten script, then a brief summary of changes"""
+Regras:
+- Mantenha a mensagem principal
+- Otimize para o objetivo especificado
+- Mantenha o tom informado
+- Adeque para videos de 15-60 segundos
+- Primeiro entregue o roteiro reescrito, depois um resumo curto das mudancas
+- Responda sempre em portugues do Brasil"""
 
         agent = self._create_agent(system_prompt)
 
-        user_prompt = f"""Rewrite this script:
+        user_prompt = f"""Reescreva este roteiro:
 
 {input_data.original_script}"""
 
@@ -130,10 +132,10 @@ Rules:
 
     async def analyze_content(self, input_data: ContentAnalyzerInput) -> ContentAnalyzerOutput:
         """Analyze content for virality patterns."""
-        system_prompt = """You are an expert content analyst specializing in viral short-form video content.
-Analyze the given transcript for virality potential.
+        system_prompt = """Voce e um analista de conteudo especializado em videos curtos virais.
+Analise a transcricao para potencial de viralidade.
 
-Output format (JSON):
+Formato de saida (JSON):
 {
   "virality_score": <0-100>,
   "strengths": ["strength1", "strength2", ...],
@@ -141,11 +143,14 @@ Output format (JSON):
   "suggested_hooks": ["hook1", "hook2", ...]
 }
 
-Be specific and actionable in your analysis."""
+Regras:
+- Seja especifico e pratico na analise
+- Responda em portugues do Brasil nos valores de texto
+- Mantenha as chaves exatamente como no formato acima"""
 
         agent = self._create_agent(system_prompt)
 
-        user_prompt = f"""Analyze this transcript for virality:
+        user_prompt = f"""Analise esta transcricao para viralidade:
 
 {input_data.transcript}"""
 
@@ -160,8 +165,8 @@ Be specific and actionable in your analysis."""
             # Fallback parsing
             data = {
                 "virality_score": 50,
-                "strengths": ["Content provided"],
-                "improvements": ["Could not parse detailed analysis"],
+                "strengths": ["Conteudo fornecido"],
+                "improvements": ["Nao foi possivel gerar uma analise detalhada"],
                 "suggested_hooks": [],
             }
 

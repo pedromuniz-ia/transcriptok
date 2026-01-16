@@ -10,10 +10,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "TranscripTok - Video Transcription & AI Tools",
+  title: "TranscripTok - Transcricao de video e ferramentas de IA",
   description:
-    "Automatic transcription, download and AI analysis for TikTok, Instagram Reels, and YouTube Shorts",
-  keywords: ["transcription", "tiktok", "youtube", "instagram", "ai", "video"],
+    "Transcricao automatica, download e analise com IA para TikTok, Instagram Reels e YouTube Shorts",
+  keywords: ["transcricao", "tiktok", "youtube", "instagram", "ia", "video"],
 };
 
 export default function RootLayout({
@@ -22,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="pt-BR" className="dark">
       <body className={`${inter.variable} font-sans antialiased`}>
         <Providers>
           <div className="min-h-screen flex flex-col">
