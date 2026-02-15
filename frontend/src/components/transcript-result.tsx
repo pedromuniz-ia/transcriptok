@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -10,9 +10,11 @@ import {
   RefreshCw,
   FileText,
   Check,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
+import { api } from "../lib/api";
 import type { TranscriptResponse } from "../lib/api";
 
 interface TranscriptResultProps {
@@ -23,15 +25,22 @@ interface TranscriptResultProps {
       author?: string;
       thumbnail_url?: string;
       duration?: number;
+      original_url?: string;
     };
   };
 }
+
+type ExportFormat = "txt" | "srt" | "vtt" | "json";
 
 export function TranscriptResult({ result }: TranscriptResultProps) {
   const { transcript, videoInfo } = result;
   const router = useRouter();
   const [showTimestamps, setShowTimestamps] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [exportFormat, setExportFormat] = useState<ExportFormat>("txt");
+  const [showFormatMenu, setShowFormatMenu] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const formatMenuRef = useRef<HTMLDivElement>(null);
 
   const openAiTools = (tool: "hooks" | "rewrite" | "analyze") => {
     try {
@@ -47,6 +56,51 @@ export function TranscriptResult({ result }: TranscriptResultProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleExport = async (format: ExportFormat) => {
+    setExporting(true);
+    try {
+      const blob = await api.exportTranscript(transcript.id, format);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `transcricao_${transcript.id.slice(0, 8)}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      // silently fail
+    } finally {
+      setExporting(false);
+      setShowFormatMenu(false);
+    }
+  };
+
+  const handleSaveThumbnail = async () => {
+    if (!videoInfo?.thumbnail_url) return;
+    try {
+      const response = await fetch(videoInfo.thumbnail_url);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `capa_${videoInfo.title?.slice(0, 30) || "video"}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      // fallback: open in new tab
+      window.open(videoInfo.thumbnail_url, "_blank");
+    }
+  };
+
+  const handleDownloadVideo = () => {
+    if (videoInfo?.original_url) {
+      window.open(videoInfo.original_url, "_blank");
+    }
+  };
+
   const formatTimestamp = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
@@ -58,6 +112,13 @@ export function TranscriptResult({ result }: TranscriptResultProps) {
         .map((s) => `[${formatTimestamp(s.start)}] ${s.text}`)
         .join("\n")
     : transcript.full_text;
+
+  const FORMAT_LABELS: Record<ExportFormat, string> = {
+    txt: "Texto (.txt)",
+    srt: "Legendas (.srt)",
+    vtt: "WebVTT (.vtt)",
+    json: "JSON (.json)",
+  };
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -93,11 +154,23 @@ export function TranscriptResult({ result }: TranscriptResultProps) {
               </div>
 
               <div className="flex gap-2 mt-4">
-                <Button variant="secondary" size="sm" className="flex-1">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="flex-1"
+                  onClick={handleSaveThumbnail}
+                  disabled={!videoInfo?.thumbnail_url}
+                >
                   <Download className="w-4 h-4 mr-1" />
                   Salvar capa
                 </Button>
-                <Button variant="secondary" size="sm" className="flex-1">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="flex-1"
+                  onClick={handleDownloadVideo}
+                  disabled={!videoInfo?.original_url}
+                >
                   <Download className="w-4 h-4 mr-1" />
                   Baixar video
                 </Button>
@@ -138,7 +211,7 @@ export function TranscriptResult({ result }: TranscriptResultProps) {
                   />
                   Mostrar timestamps
                 </label>
-                <div className="flex gap-1">
+                <div className="flex gap-1 items-center">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -151,9 +224,33 @@ export function TranscriptResult({ result }: TranscriptResultProps) {
                       <Copy className="w-4 h-4" />
                     )}
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Download className="w-4 h-4" />
-                  </Button>
+
+                  {/* Export dropdown */}
+                  <div className="relative" ref={formatMenuRef}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 gap-1 px-2"
+                      onClick={() => setShowFormatMenu(!showFormatMenu)}
+                      disabled={exporting}
+                    >
+                      <Download className="w-4 h-4" />
+                      <ChevronDown className="w-3 h-3" />
+                    </Button>
+                    {showFormatMenu && (
+                      <div className="absolute right-0 top-full mt-1 z-10 bg-popover border border-border rounded-md shadow-lg py-1 min-w-[160px]">
+                        {(["txt", "srt", "vtt", "json"] as ExportFormat[]).map((fmt) => (
+                          <button
+                            key={fmt}
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-secondary transition-colors"
+                            onClick={() => handleExport(fmt)}
+                          >
+                            {FORMAT_LABELS[fmt]}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 

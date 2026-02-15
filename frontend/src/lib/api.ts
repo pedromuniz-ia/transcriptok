@@ -33,6 +33,34 @@ export interface TranscriptResponse {
   created_at: string;
 }
 
+export interface TranscriptListItem {
+  id: string;
+  video_id: string;
+  video_title?: string;
+  video_author?: string;
+  platform?: string;
+  duration?: number;
+  language?: string;
+  confidence?: number;
+  job_status?: string;
+  created_at: string;
+}
+
+export interface TranscriptListResponse {
+  items: TranscriptListItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface TranscriptListParams {
+  limit?: number;
+  offset?: number;
+  status?: string;
+  platform?: string;
+  search?: string;
+}
+
 export interface HookGeneratorInput {
   transcript: string;
   style?: "curiosity" | "shock" | "question" | "story";
@@ -98,6 +126,19 @@ class ApiClient {
   }
 
   // Transcript endpoints
+  async listTranscripts(
+    params: TranscriptListParams = {}
+  ): Promise<TranscriptListResponse> {
+    const searchParams = new URLSearchParams();
+    if (params.limit) searchParams.set("limit", String(params.limit));
+    if (params.offset) searchParams.set("offset", String(params.offset));
+    if (params.status) searchParams.set("status", params.status);
+    if (params.platform) searchParams.set("platform", params.platform);
+    if (params.search) searchParams.set("search", params.search);
+    const qs = searchParams.toString();
+    return this.request(`/api/v1/transcripts/${qs ? `?${qs}` : ""}`);
+  }
+
   async createTranscript(data: {
     video_url?: string;
     job_id?: string;

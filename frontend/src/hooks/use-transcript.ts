@@ -9,6 +9,7 @@ interface VideoInfo {
   author?: string;
   thumbnail_url?: string;
   duration?: number;
+  original_url?: string;
 }
 
 interface TranscriptResult {
@@ -69,6 +70,7 @@ export function useTranscript() {
         author: downloadJob.output_data?.author as string | undefined,
         thumbnail_url: downloadJob.output_data?.thumbnail_url as string | undefined,
         duration: downloadJob.output_data?.duration as number | undefined,
+        original_url: url,
       };
 
       // Step 3: Create transcript

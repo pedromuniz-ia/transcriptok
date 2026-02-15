@@ -31,7 +31,7 @@ export function Header() {
             Ferramentas IA
           </Link>
           <a
-            href="https://github.com"
+            href="https://github.com/pedromuniz-ia/transcriptok"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"

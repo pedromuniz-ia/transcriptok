@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Sparkles, RefreshCw, BarChart3, Loader2 } from "lucide-react";
 import { Button } from "../../components/ui/button";
@@ -19,6 +19,18 @@ const isToolTab = (value: string | null): value is ToolTab =>
   value === "hooks" || value === "rewrite" || value === "analyze";
 
 export default function AIToolsPage() {
+  return (
+    <Suspense fallback={
+      <div className="py-12 px-4 flex justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    }>
+      <AIToolsContent />
+    </Suspense>
+  );
+}
+
+function AIToolsContent() {
   const searchParams = useSearchParams();
   const initRef = useRef(false);
   const [activeTab, setActiveTab] = useState<ToolTab>("hooks");

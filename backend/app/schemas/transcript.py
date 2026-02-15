@@ -62,3 +62,27 @@ class TranscriptExportRequest(BaseModel):
 
     format: ExportFormat = ExportFormat.TXT
     include_timestamps: bool = True
+
+
+class TranscriptListItem(BaseModel):
+    """Single item in transcript listing."""
+
+    id: UUID
+    video_id: UUID
+    video_title: str | None = None
+    video_author: str | None = None
+    platform: str | None = None
+    duration: int | None = None
+    language: str | None = None
+    confidence: float | None = None
+    job_status: str | None = None
+    created_at: datetime
+
+
+class TranscriptListResponse(BaseModel):
+    """Paginated response for transcript listing."""
+
+    items: list[TranscriptListItem]
+    total: int
+    limit: int
+    offset: int

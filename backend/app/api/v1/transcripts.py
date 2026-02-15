@@ -2,24 +2,107 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
-from sqlalchemy import select
+from sqlalchemy import func, or_, select
 
 from app.api.deps import ClientIP, DbSession, transcript_rate_limit
 from app.models.job import Job
 from app.models.transcript import Transcript
+from app.models.video import Video
 from app.schemas.job import JobResponse
 from app.schemas.transcript import (
     TranscriptCreateRequest,
     TranscriptCreateResponse,
     TranscriptExportRequest,
+    TranscriptListItem,
+    TranscriptListResponse,
     TranscriptResponse,
 )
 from app.services.exporter import ExporterService
 from app.workers.transcribe_task import transcribe_video_task
 
 router = APIRouter()
+
+
+@router.get("/", response_model=TranscriptListResponse)
+async def list_transcripts(
+    db: DbSession,
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    status_filter: str | None = Query(None, alias="status"),
+    platform: str | None = Query(None),
+    search: str | None = Query(None),
+) -> TranscriptListResponse:
+    """List transcripts with pagination and filters."""
+    query = (
+        select(
+            Transcript.id,
+            Transcript.video_id,
+            Video.title.label("video_title"),
+            Video.author.label("video_author"),
+            Video.platform,
+            Video.duration,
+            Transcript.language,
+            Transcript.confidence,
+            Job.status.label("job_status"),
+            Transcript.created_at,
+        )
+        .join(Video, Transcript.video_id == Video.id)
+        .outerjoin(Job, Transcript.job_id == Job.id)
+    )
+
+    count_query = (
+        select(func.count(Transcript.id))
+        .join(Video, Transcript.video_id == Video.id)
+        .outerjoin(Job, Transcript.job_id == Job.id)
+    )
+
+    if status_filter:
+        query = query.where(Job.status == status_filter)
+        count_query = count_query.where(Job.status == status_filter)
+
+    if platform:
+        query = query.where(Video.platform == platform)
+        count_query = count_query.where(Video.platform == platform)
+
+    if search:
+        search_filter = or_(
+            Transcript.full_text.ilike(f"%{search}%"),
+            Video.title.ilike(f"%{search}%"),
+        )
+        query = query.where(search_filter)
+        count_query = count_query.where(search_filter)
+
+    total_result = await db.execute(count_query)
+    total = total_result.scalar() or 0
+
+    query = query.order_by(Transcript.created_at.desc()).offset(offset).limit(limit)
+    result = await db.execute(query)
+    rows = result.all()
+
+    items = [
+        TranscriptListItem(
+            id=row.id,
+            video_id=row.video_id,
+            video_title=row.video_title,
+            video_author=row.video_author,
+            platform=row.platform,
+            duration=row.duration,
+            language=row.language,
+            confidence=row.confidence,
+            job_status=row.job_status,
+            created_at=row.created_at,
+        )
+        for row in rows
+    ]
+
+    return TranscriptListResponse(
+        items=items,
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
 
 
 @router.post(
